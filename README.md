@@ -25,3 +25,11 @@
 2. Program will ask for directory of where the text files are
 3. Choose `data` directory
 4. Program will look for `regression.txt` inside that chosen folder
+
+## About the Data File
+
+In a 2D (two-dimensional) space (x-y coordinators), there are 20 points (x-y pairs)
+
+## Goal
+
+Find a mathematical function to describe the relationship between the output variable `y` and input variable `x`
