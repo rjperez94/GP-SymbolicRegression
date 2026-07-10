@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+
+import ecs100.UI;
 import org.jgap.InvalidConfigurationException;
 import org.jgap.gp.CommandGene;
 import org.jgap.gp.GPFitnessFunction;
@@ -16,13 +18,13 @@ public class GPMathProblem extends GPProblem {
 	protected static Float[] y = new Float[20];
 	private final GPConfiguration config;
 
-	public GPMathProblem(GPConfiguration config, ArrayList<Double> input, ArrayList<Double> output) throws InvalidConfigurationException {
+	public GPMathProblem(UI ui, GPConfiguration config, ArrayList<Double> input, ArrayList<Double> output) throws InvalidConfigurationException {
 		this.config = config;
 		
 		for (int i = 0; i < 20; i++) {
 			x[i] = input.get(i).floatValue();
 			y[i] = output.get(i).floatValue();
-			System.out.println(i + ") " + x[i] + " " + y[i]);
+			ui.println(i + ") " + x[i] + " " + y[i]);
 		}
 	}
 
@@ -50,6 +52,12 @@ public class GPMathProblem extends GPProblem {
 
 	public static class FunctionFitnessFormula extends GPFitnessFunction {
 
+		private UI ui;
+
+		public FunctionFitnessFormula(UI ui) {
+			this.ui = ui;
+		}
+
 		@Override
 		protected double evaluate(IGPProgram ind) {
 			double error = 0.0f;
@@ -64,8 +72,8 @@ public class GPMathProblem extends GPProblem {
 					}
 				} catch (ArithmeticException ex) {
 					// This should not happen, some illegal operation was used
-					System.out.println("x = " + x[i].floatValue());
-					System.out.println(ind);
+					ui.println("x = " + x[i].floatValue());
+					ui.println(ind);
 					throw ex;
 				}
 			}

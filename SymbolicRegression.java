@@ -5,6 +5,9 @@ import java.util.Scanner;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+
+import ecs100.UI;
+import org.apache.log4j.Logger;
 import org.jgap.InvalidConfigurationException;
 import org.jgap.gp.impl.DeltaGPFitnessEvaluator;
 import org.jgap.gp.impl.GPConfiguration;
@@ -13,36 +16,59 @@ import org.jgap.gp.impl.GPGenotype;
 public class SymbolicRegression {
 	private static JFileChooser fileChooser = new JFileChooser();
 	private static final String TRAINSET_FILENAME = "regression.txt";
+	private static UI ui;
 	private static final int MAX_GENERATIONS = 5000;
 	private static ArrayList<Double> x = new ArrayList<Double>();
 	private static ArrayList<Double> y = new ArrayList<Double>();
 
 	public static void main(String[] args) throws InvalidConfigurationException {
+		// Log4j programmatic interception
+		interceptJgapLogs();
+
 		chooseDir();
+
+		UI.repaintGraphics();
+		SymbolicRegression.ui = getUIfromECS();
 
 		GPConfiguration config = new GPConfiguration();
 		config.setGPFitnessEvaluator(new DeltaGPFitnessEvaluator());
 		//config.setMinInitDepth(6);
 		config.setMaxInitDepth(6);
 		config.setPopulationSize(100);
-		config.setFitnessFunction(new GPMathProblem.FunctionFitnessFormula());
+		config.setFitnessFunction(new GPMathProblem.FunctionFitnessFormula(ui));
 		//config.setReproductionProb(75f);
 		//config.setMutationProb(1f);
 		config.setCrossoverProb(90f);
-		GPMathProblem problem = new GPMathProblem(config, x, y);
+		GPMathProblem problem = new GPMathProblem(ui, config, x, y);
 		GPGenotype gp = problem.create();
 
 		gp.setVerboseOutput(true);
 
-		System.out.println("Maximum of " + MAX_GENERATIONS + " generations");
+		ui.println("Maximum of " + MAX_GENERATIONS + " generations");
 		for (int i = 0; i < MAX_GENERATIONS; i++) {
 			gp.evolve(1);
 			if (gp.getAllTimeBest() != null && gp.getAllTimeBest().getFitnessValue() == 0) {
-				System.out.println("\nFound a program with fitness of 0.0 after " + i + " generations\n");
+				ui.println("\nFound a program with fitness of 0.0 after " + i + " generations\n");
 				break;
 			}
 		}
+		ui.println("Best solution found:");
 		gp.outputSolution(gp.getAllTimeBest());
+	}
+
+	public static void interceptJgapLogs() {
+		Logger jgapLogger = Logger.getLogger("org.jgap");
+		jgapLogger.addAppender(new org.apache.log4j.AppenderSkeleton() {
+			@Override
+			protected void append(org.apache.log4j.spi.LoggingEvent event) {
+				if (event.getLevel().equals(org.apache.log4j.Level.INFO)) {
+					String message = event.getRenderedMessage();
+					ui.println(message);
+				}
+			}
+			@Override public void close() {}
+			@Override public boolean requiresLayout() { return false; }
+		});
 	}
 
 	private static void chooseDir() {
@@ -75,6 +101,18 @@ public class SymbolicRegression {
 			} else {
 				readFile(train);
 			}
+		}
+	}
+
+	private static UI getUIfromECS() {
+		// Access UI.theUI via reflection since it may not be publicly accessible
+		try {
+			java.lang.reflect.Field theUIField = UI.class.getDeclaredField("theUI");
+			theUIField.setAccessible(true);
+			return  (UI) theUIField.get(null);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
 		}
 	}
 
