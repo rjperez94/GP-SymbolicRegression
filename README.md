@@ -19,6 +19,11 @@
 12. Find the `jgap.jar`, `commons-lang-2.1.jar` and `log4j.jar`
 13. Click `Open`
 
+### Linking the UI Library
+
+14. Right click on your `Java Project` --> `Build Path` --> `Add External Archives`
+15. Select `ecs100.jar` and link it to the project. That JAR will be in the directory where you downloaded ZIP
+
 ## Running the program
 
 1. Right click on your `Java Project` --> `Run As` --> `Java Application`
